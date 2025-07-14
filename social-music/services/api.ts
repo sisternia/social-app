@@ -1,0 +1,109 @@
+const BASE_URL = 'http://192.168.1.9:3001/api/users';
+const BASE_HOST = 'http://192.168.1.9:3001';
+
+export const login = async (email: string, password: string) => {
+  const res = await fetch(`${BASE_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? data.status : 'error', ...data };
+};
+
+export const register = async (user_name: string, email: string, password: string) => {
+  const res = await fetch(`${BASE_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_name, email, password }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const verifyCode = async (code: string, action?: string) => {
+  const res = await fetch(`${BASE_URL}/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, action }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const forgotPassword = async (email: string) => {
+  const res = await fetch(`${BASE_URL}/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const resetPassword = async (email: string, password: string) => {
+  const res = await fetch(`${BASE_URL}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const fetchUserInfo = async (email: string) => {
+  const res = await fetch(`${BASE_URL}/info?email=${email}`);
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const uploadAvatar = async (email: string, assetUri: string) => {
+  const formData = new FormData();
+  formData.append('email', email);
+  formData.append('avatar', {
+    uri: assetUri,
+    name: 'avatar.jpg',
+    type: 'image/jpeg',
+  } as any);
+
+  const res = await fetch(`${BASE_URL}/avatar`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const uploadBackground = async (email: string, assetUri: string) => {
+  const formData = new FormData();
+  formData.append('email', email);
+  formData.append('background', {
+    uri: assetUri,
+    name: 'background.jpg',
+    type: 'image/jpeg',
+  } as any);
+
+  const res = await fetch(`${BASE_URL}/background`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const getImageUrl = (filename: string | null) => {
+  return filename ? `${BASE_HOST}/${filename}` : null;
+};
