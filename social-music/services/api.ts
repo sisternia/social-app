@@ -1,5 +1,5 @@
-const BASE_URL = 'http://192.168.1.9:3001/api/users';
-const BASE_HOST = 'http://192.168.1.9:3001';
+const BASE_URL = 'http://192.168.1.3:3001/api/users';
+const BASE_HOST = 'http://192.168.1.3:3001';
 
 export const login = async (email: string, password: string) => {
   const res = await fetch(`${BASE_URL}/login`, {
@@ -106,4 +106,29 @@ export const uploadBackground = async (email: string, assetUri: string) => {
 
 export const getImageUrl = (filename: string | null) => {
   return filename ? `${BASE_HOST}/${filename}` : null;
+};
+
+export const updateUserInfo = async (
+  user_id: string,
+  updates: {
+    user_name: string;
+    user_dob: string | null;
+    user_phone: string;
+    user_bio: string;
+    user_add: string;
+  }
+) => {
+  const body = {
+    user_id,
+    ...updates,
+  };
+
+  const res = await fetch(`${BASE_URL}/update-info`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
 };

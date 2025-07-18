@@ -1,10 +1,10 @@
 import TextField from '@/components/ui/TextField';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { login } from '@/services/api';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { login } from '@/services/api';
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme();

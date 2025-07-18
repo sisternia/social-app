@@ -3,7 +3,7 @@ const db = require('../db/db');
 const UserInfoModel = {
   createEmptyUserInfo: (userInfo, callback) => {
     const query = `
-      INSERT INTO user_info (user_info_id, user_phone, user_add, user_bio, user_avatar, user_background, user_id)
+      INSERT INTO user_info (user_info_id, user_dob, user_phone, user_add, user_bio, user_avatar, user_background, user_id)
       VALUES (?, NULL, NULL, NULL, NULL, NULL, ?)
     `;
     const values = [userInfo.user_info_id, userInfo.user_id];

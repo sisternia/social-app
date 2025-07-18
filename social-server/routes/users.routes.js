@@ -8,7 +8,8 @@ const {
   resetPassword,
   getUserInfo,
   updateUserBackground,
-  uploadUserAvatar
+  uploadUserAvatar,
+  updateUserInfo
 } = require('../controller/users.controller');
 
 router.post('/register', registerUser);
@@ -19,5 +20,6 @@ router.post('/reset-password', resetPassword);
 router.get('/info', getUserInfo);
 router.post('/background', updateUserBackground);
 router.post('/avatar', uploadUserAvatar);
+router.post('/update-info', updateUserInfo);
 
 module.exports = router;

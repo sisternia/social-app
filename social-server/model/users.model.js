@@ -15,7 +15,12 @@ const UserModel = {
 
   updatePasswordByEmail: (email, hashedPassword, callback) => {
     db.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email], callback);
+  },
+
+  updateUserNameById: (user_id, user_name, callback) => {
+    db.query('UPDATE users SET user_name = ? WHERE user_id = ?', [user_name, user_id], callback);
   }
+  
 };
 
 module.exports = UserModel;

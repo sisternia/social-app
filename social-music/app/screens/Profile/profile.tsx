@@ -8,11 +8,11 @@ import {
   uploadBackground,
 } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
-  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -34,24 +34,26 @@ export default function ProfileScreen() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const data = await fetchUserInfo(email as string);
-        if (data.status === 'success') {
-          setUserName(data.user_name);
-          setAvatarImage(getImageUrl(data.user_avatar));
-          setBackgroundImage(getImageUrl(data.user_background));
-        } else {
-          setUserName('Không rõ');
-        }
-      } catch (err) {
-        setUserName('Lỗi kết nối');
+  const loadUserInfo = async () => {
+    try {
+      const data = await fetchUserInfo(email as string);
+      if (data.status === 'success') {
+        setUserName(data.user_name);
+        setAvatarImage(getImageUrl(data.user_avatar));
+        setBackgroundImage(getImageUrl(data.user_background));
+      } else {
+        setUserName('Không rõ');
       }
-    };
+    } catch (err) {
+      setUserName('Lỗi kết nối');
+    }
+  };
 
-    if (email) loadUserInfo();
-  }, [email]);
+  useFocusEffect(
+    useCallback(() => {
+      if (email) loadUserInfo();
+    }, [email])
+  );
 
   const pickBackground = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -61,18 +63,12 @@ export default function ProfileScreen() {
 
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
-
       try {
         const data = await uploadBackground(email as string, asset.uri);
-
         if (data.status === 'success') {
           setBackgroundImage(getImageUrl(data.filename));
-        } else {
-          Alert.alert('Lỗi', data.message || 'Không thể cập nhật ảnh nền');
         }
-      } catch (err) {
-        Alert.alert('Lỗi', 'Không thể tải lên ảnh nền');
-      }
+      } catch (err) {}
     }
   };
 
@@ -85,18 +81,12 @@ export default function ProfileScreen() {
 
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
-
       try {
         const data = await uploadAvatar(email as string, asset.uri);
-
         if (data.status === 'success') {
           setAvatarImage(getImageUrl(data.filename));
-        } else {
-          Alert.alert('Lỗi', data.message || 'Không thể cập nhật avatar');
         }
-      } catch (err) {
-        Alert.alert('Lỗi', 'Không thể tải lên avatar');
-      }
+      } catch (err) {}
     }
   };
 
@@ -128,7 +118,15 @@ export default function ProfileScreen() {
 
       <Text style={[styles.userText, { color: themeColor.text }]}>{userName}</Text>
 
-      <Pressable style={styles.editBtn} onPress={() => router.push('/screens/Profile/edit_profile')}>
+      <Pressable
+        style={styles.editBtn}
+        onPress={() =>
+          router.push({
+            pathname: '/screens/Profile/edit_profile',
+            params: { email },
+          })
+        }
+      >
         <Ionicons name="create-outline" size={18} color="#fff" />
         <Text style={styles.editText}>Chỉnh sửa thông tin</Text>
       </Pressable>

@@ -272,12 +272,49 @@ const getUserInfo = (req, res) => {
 
       const user_background = info[0]?.user_background || null;
       const user_avatar = info[0]?.user_avatar || null;
+      const user_dob = info[0]?.user_dob || null;
+      const user_phone = info[0]?.user_phone || null;
+      const user_bio = info[0]?.user_bio || null;
+      const user_add = info[0]?.user_add || null;
 
       return res.status(200).json({
+        status: 'success',
+        user_id: user.user_id,
         user_name: user.user_name,
         user_background,
         user_avatar,
+        user_dob,
+        user_phone,
+        user_bio,
+        user_add,
       });
+    });
+  });
+};
+
+const updateUserInfo = (req, res) => {
+  const { user_id, user_name, user_dob, user_phone, user_add, user_bio } = req.body;
+
+  if (!user_id) return res.status(400).json({ message: 'Thiếu user_id' });
+
+  // 1. Cập nhật bảng users
+  UserModel.updateUserNameById(user_id, user_name, (err) => {
+    if (err) return res.status(500).json({ message: 'Lỗi cập nhật tên người dùng' });
+
+    // 2. Cập nhật bảng user_info
+    const updates = {};
+    if (user_dob) updates.user_dob = user_dob;
+    if (user_phone) updates.user_phone = user_phone;
+    if (user_add) updates.user_add = user_add;
+    if (user_bio) updates.user_bio = user_bio;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(200).json({ message: 'Cập nhật thành công (chỉ tên)' });
+    }
+
+    UserInfoModel.updateByUserId(user_id, updates, (err) => {
+      if (err) return res.status(500).json({ message: 'Lỗi cập nhật thông tin người dùng' });
+      return res.status(200).json({ message: 'Cập nhật thông tin thành công' });
     });
   });
 };
@@ -290,5 +327,6 @@ module.exports = {
   resetPassword,
   getUserInfo,
   updateUserBackground,
-  uploadUserAvatar
+  uploadUserAvatar,
+  updateUserInfo
 };
