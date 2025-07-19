@@ -32,7 +32,7 @@ export default function LoginScreen() {
       } else {
         Alert.alert('Thành công', 'Đăng nhập thành công');
         setTimeout(() => {
-          router.replace({ pathname: '/screens/Profile/profile', params: { email } });
+          router.replace({ pathname: '/screens/HomePage/home_page', params: { email } });
         }, 1000);
       }
     } catch (err) {

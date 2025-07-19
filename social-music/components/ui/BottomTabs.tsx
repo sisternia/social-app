@@ -1,43 +1,57 @@
+// ✅ FIXED BottomTabs.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useRouter, useLocalSearchParams, usePathname } from 'expo-router';
 
 const TABS = [
-  { label: 'Trang chủ', icon: 'home-outline' },
-  { label: 'Cửa hàng', icon: 'cart-outline' },
-  { label: 'Thông báo', icon: 'notifications-outline' },
-  { label: 'Bạn bè', icon: 'people-outline' },
-  { label: 'Cài đặt', icon: 'settings-outline' },
+  { label: 'Trang chủ', icon: 'home-outline', route: '/screens/HomePage/home_page' as const },
+  { label: 'Cửa hàng', icon: 'cart-outline', route: null },
+  { label: 'Thông báo', icon: 'notifications-outline', route: null },
+  { label: 'Bạn bè', icon: 'people-outline', route: null },
+  { label: 'Cài đặt', icon: 'settings-outline', route: '/screens/Profile/profile' as const },
 ];
 
 const tabWidth = Dimensions.get('window').width / TABS.length;
 
 export default function BottomTabs() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { email } = useLocalSearchParams();
+
   const [activeIndex, setActiveIndex] = useState(0);
   const translateX = useSharedValue(0);
 
-  const animatedCursorStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: withTiming(translateX.value, { duration: 200 }) }],
-    };
-  });
+  useEffect(() => {
+    const index = TABS.findIndex(tab => tab.route && pathname?.startsWith(tab.route));
+    if (index !== -1) {
+      setActiveIndex(index);
+      translateX.value = index * tabWidth;
+    }
+  }, [pathname]);
+
+  const animatedCursorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: withTiming(translateX.value, { duration: 200 }) }],
+  }));
 
   const handlePress = (index: number) => {
-    setActiveIndex(index);
-    translateX.value = index * tabWidth;
+    const tab = TABS[index];
+    if (tab.route) {
+      router.replace({ pathname: tab.route, params: { email } });
+      setActiveIndex(index);
+      translateX.value = index * tabWidth;
+    }
   };
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.tabContainer}>
-        {/* Cursor dưới */}
         <Animated.View style={[styles.cursor, animatedCursorStyle]} />
-
         {TABS.map((tab, index) => (
           <Pressable
             key={index}
@@ -49,12 +63,7 @@ export default function BottomTabs() {
               size={20}
               color={index === activeIndex ? '#0a7ea4' : '#888'}
             />
-            <Text
-              style={[
-                styles.label,
-                { color: index === activeIndex ? '#0a7ea4' : '#888' },
-              ]}
-            >
+            <Text style={[styles.label, { color: index === activeIndex ? '#0a7ea4' : '#888' }]}>
               {tab.label}
             </Text>
           </Pressable>

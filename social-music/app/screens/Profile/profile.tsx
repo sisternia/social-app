@@ -17,10 +17,12 @@ import {
   Image,
   ImageBackground,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import PostsCTScreen from '../PostsCT/postsct';
 
 const { width, height } = Dimensions.get('window');
 
@@ -91,45 +93,49 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColor.background }]}>
-      <ImageBackground
-        source={backgroundImage ? { uri: backgroundImage } : undefined}
-        style={styles.coverContainer}
-        resizeMode="cover"
-      >
-        <Pressable onPress={pickBackground}>
-          <Ionicons name="camera" size={24} color="#fff" style={styles.coverCameraIcon} />
-        </Pressable>
-      </ImageBackground>
+    <View style={{ flex: 1, backgroundColor: themeColor.background }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ImageBackground
+          source={backgroundImage ? { uri: backgroundImage } : undefined}
+          style={styles.coverContainer}
+          resizeMode="cover"
+        >
+          <Pressable onPress={pickBackground}>
+            <Ionicons name="camera" size={24} color="#fff" style={styles.coverCameraIcon} />
+          </Pressable>
+        </ImageBackground>
 
-      <View style={styles.avatarWrapper}>
-        <View style={styles.avatar}>
-          {avatarImage ? (
-            <Image source={{ uri: avatarImage }} style={styles.avatarImage} />
-          ) : (
-            <Ionicons name="person" size={40} color="#ccc" />
-          )}
+        <View style={styles.avatarWrapper}>
+          <View style={styles.avatar}>
+            {avatarImage ? (
+              <Image source={{ uri: avatarImage }} style={styles.avatarImage} />
+            ) : (
+              <Ionicons name="person" size={40} color="#ccc" />
+            )}
+          </View>
+
+          <Pressable onPress={pickAvatar} style={styles.avatarCameraIconWrapper}>
+            <Ionicons name="camera" size={20} color="#000" />
+          </Pressable>
         </View>
 
-        <Pressable onPress={pickAvatar} style={styles.avatarCameraIconWrapper}>
-          <Ionicons name="camera" size={20} color="#000" />
+        <Text style={[styles.userText, { color: themeColor.text }]}>{userName}</Text>
+
+        <Pressable
+          style={styles.editBtn}
+          onPress={() =>
+            router.push({
+              pathname: '/screens/Profile/edit_profile',
+              params: { email },
+            })
+          }
+        >
+          <Ionicons name="create-outline" size={18} color="#fff" />
+          <Text style={styles.editText}>Chỉnh sửa thông tin</Text>
         </Pressable>
-      </View>
 
-      <Text style={[styles.userText, { color: themeColor.text }]}>{userName}</Text>
-
-      <Pressable
-        style={styles.editBtn}
-        onPress={() =>
-          router.push({
-            pathname: '/screens/Profile/edit_profile',
-            params: { email },
-          })
-        }
-      >
-        <Ionicons name="create-outline" size={18} color="#fff" />
-        <Text style={styles.editText}>Chỉnh sửa thông tin</Text>
-      </Pressable>
+        <PostsCTScreen />
+      </ScrollView>
 
       <BottomNavBar />
     </View>
@@ -137,14 +143,25 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center' },
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+  },
   coverContainer: {
     width: '100%',
     height: height / 3,
     backgroundColor: '#000',
     justifyContent: 'flex-end',
   },
-  coverCameraIcon: { position: 'absolute', bottom: 10, right: 10 },
+  coverCameraIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+  },
   avatarWrapper: {
     marginTop: -width / 6,
     alignItems: 'center',
@@ -174,7 +191,11 @@ const styles = StyleSheet.create({
     padding: 4,
     elevation: 3,
   },
-  userText: { fontSize: 20, fontWeight: 'bold', marginTop: 12 },
+  userText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 12,
+  },
   editBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -184,5 +205,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
   },
-  editText: { color: '#fff', fontWeight: 'bold', marginLeft: 8 },
+  editText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
 });
