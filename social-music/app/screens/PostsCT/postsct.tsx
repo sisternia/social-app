@@ -5,16 +5,16 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
-    Alert,
-    Dimensions,
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import LoadSct from './loadsct';
 
@@ -32,7 +32,7 @@ const formatDateTime = (date: Date) => {
 };
 
 export default function PostsCTScreen() {
-  const { email } = useLocalSearchParams();
+  const { user_id } = useLocalSearchParams();
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>('Người dùng');
   const [text, setText] = useState('');
@@ -44,7 +44,7 @@ export default function PostsCTScreen() {
   >([]);
 
   const loadUser = async () => {
-    const data = await fetchUserInfo(email as string);
+    const data = await fetchUserInfo(user_id as string);
     if (data.status === 'success') {
       setAvatarImage(getImageUrl(data.user_avatar));
       setUserName(data.user_name);
@@ -53,8 +53,8 @@ export default function PostsCTScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (email) loadUser();
-    }, [email])
+      if (user_id) loadUser();
+    }, [user_id])
   );
 
   const pickMedia = async () => {

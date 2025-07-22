@@ -20,5 +20,5 @@ app.use('/assets', express.static('assets')); // ⬅️ Bây giờ KHÔNG còn l
 app.use('/api/users', userRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://192.168.1.3:${PORT}`);
+  console.log(`Server running on http://192.168.1.7:${PORT}`);
 });

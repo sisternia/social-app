@@ -1,5 +1,5 @@
-// ✅ FIXED BottomTabs.tsx
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -7,7 +7,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useRouter, useLocalSearchParams, usePathname } from 'expo-router';
 
 const TABS = [
   { label: 'Trang chủ', icon: 'home-outline', route: '/screens/HomePage/home_page' as const },
@@ -22,7 +21,7 @@ const tabWidth = Dimensions.get('window').width / TABS.length;
 export default function BottomTabs() {
   const router = useRouter();
   const pathname = usePathname();
-  const { email } = useLocalSearchParams();
+  const { user_id } = useLocalSearchParams();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const translateX = useSharedValue(0);
@@ -42,7 +41,7 @@ export default function BottomTabs() {
   const handlePress = (index: number) => {
     const tab = TABS[index];
     if (tab.route) {
-      router.replace({ pathname: tab.route, params: { email } });
+      router.replace({ pathname: tab.route, params: { user_id, reload: Date.now() } }); // ép reload
       setActiveIndex(index);
       translateX.value = index * tabWidth;
     }

@@ -9,6 +9,10 @@ const UserModel = {
     db.query('SELECT * FROM users WHERE email = ?', [email], callback);
   },
 
+  findByUserId: (user_id, callback) => {
+    db.query('SELECT * FROM users WHERE user_id = ?', [user_id], callback);
+  },
+
   createUser: (user, callback) => {
     db.query('INSERT INTO users SET ?', user, callback);
   },

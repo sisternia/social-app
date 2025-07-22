@@ -1,5 +1,5 @@
-const BASE_URL = 'http://192.168.1.3:3001/api/users';
-const BASE_HOST = 'http://192.168.1.3:3001';
+const BASE_URL = 'http://192.168.1.7:3001/api/users';
+const BASE_HOST = 'http://192.168.1.7:3001';
 
 export const login = async (email: string, password: string) => {
   const res = await fetch(`${BASE_URL}/login`, {
@@ -56,15 +56,15 @@ export const resetPassword = async (email: string, password: string) => {
   return { status: res.ok ? 'success' : 'error', ...data };
 };
 
-export const fetchUserInfo = async (email: string) => {
-  const res = await fetch(`${BASE_URL}/info?email=${email}`);
+export const fetchUserInfo = async (user_id: string) => {
+  const res = await fetch(`${BASE_URL}/info?user_id=${user_id}`);
   const data = await res.json();
   return { status: res.ok ? 'success' : 'error', ...data };
 };
 
-export const uploadAvatar = async (email: string, assetUri: string) => {
+export const uploadAvatar = async (user_id: string, assetUri: string) => {
   const formData = new FormData();
-  formData.append('email', email);
+  formData.append('user_id', user_id);
   formData.append('avatar', {
     uri: assetUri,
     name: 'avatar.jpg',
@@ -83,9 +83,9 @@ export const uploadAvatar = async (email: string, assetUri: string) => {
   return { status: res.ok ? 'success' : 'error', ...data };
 };
 
-export const uploadBackground = async (email: string, assetUri: string) => {
+export const uploadBackground = async (user_id: string, assetUri: string) => {
   const formData = new FormData();
-  formData.append('email', email);
+  formData.append('user_id', user_id);
   formData.append('background', {
     uri: assetUri,
     name: 'background.jpg',

@@ -87,7 +87,11 @@ const loginUser = (req, res) => {
           return res.status(200).json({ status: 'unverified', message: 'Tài khoản chưa xác minh' });
         });
       } else {
-        return res.status(200).json({ status: 'verified', message: 'Đăng nhập thành công' });
+        return res.status(200).json({
+          status: 'verified',
+          message: 'Đăng nhập thành công',
+          user_id: user.user_id  // THÊM DÒNG NÀY
+        });        
       }
     });
   });
@@ -221,13 +225,11 @@ const uploadUserAvatar = (req, res) => {
   uploadAvatar(req, res, (err) => {
     if (err) return res.status(500).json({ message: 'Lỗi khi tải ảnh' });
 
-    const { email } = req.body;
+    const { user_id } = req.body;
     const filename = `assets/avatar/${req.file.filename}`;
 
-    UserModel.findByEmail(email, (err, users) => {
+    UserModel.findByUserId(user_id, (err, users) => {
       if (err || users.length === 0) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
-
-      const user_id = users[0].user_id;
 
       UserInfoModel.updateByUserId(user_id, { user_avatar: filename }, (err) => {
         if (err) return res.status(500).json({ message: 'Lỗi cập nhật avatar' });
@@ -241,13 +243,11 @@ const updateUserBackground = (req, res) => {
   uploadBackground(req, res, (err) => {
     if (err) return res.status(500).json({ message: 'Lỗi tải ảnh nền' });
 
-    const { email } = req.body;
+    const { user_id } = req.body;
     const filename = `assets/background/${req.file.filename}`;
 
-    UserModel.findByEmail(email, (err, users) => {
+    UserModel.findByUserId(user_id, (err, users) => {
       if (err || users.length === 0) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
-
-      const user_id = users[0].user_id;
 
       UserInfoModel.updateByUserId(user_id, { user_background: filename }, (err) => {
         if (err) return res.status(500).json({ message: 'Lỗi cập nhật ảnh nền' });
@@ -258,16 +258,17 @@ const updateUserBackground = (req, res) => {
 };
 
 const getUserInfo = (req, res) => {
-  const { email } = req.query;
-  if (!email) return res.status(400).json({ message: 'Thiếu email' });
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ message: 'Thiếu user_id' });
 
-  UserModel.findByEmail(email, (err, users) => {
+  UserModel.findByUserId(user_id, (err, users) => {
     if (err) return res.status(500).json({ message: 'Lỗi server' });
     if (users.length === 0) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
     const user = users[0];
+    const user_email = user.email;
 
-    UserInfoModel.getByUserId(user.user_id, (err, info) => {
+    UserInfoModel.getByUserId(user_id, (err, info) => {
       if (err) return res.status(500).json({ message: 'Lỗi khi lấy user_info' });
 
       const user_background = info[0]?.user_background || null;
@@ -281,6 +282,7 @@ const getUserInfo = (req, res) => {
         status: 'success',
         user_id: user.user_id,
         user_name: user.user_name,
+        email: user_email,
         user_background,
         user_avatar,
         user_dob,

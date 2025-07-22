@@ -29,7 +29,7 @@ const { width, height } = Dimensions.get('window');
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const themeColor = Colors[colorScheme ?? 'light'];
-  const { email } = useLocalSearchParams();
+  const { user_id } = useLocalSearchParams();
   const router = useRouter();
 
   const [userName, setUserName] = useState('Đang tải...');
@@ -38,7 +38,7 @@ export default function ProfileScreen() {
 
   const loadUserInfo = async () => {
     try {
-      const data = await fetchUserInfo(email as string);
+      const data = await fetchUserInfo(user_id as string);
       if (data.status === 'success') {
         setUserName(data.user_name);
         setAvatarImage(getImageUrl(data.user_avatar));
@@ -53,8 +53,8 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (email) loadUserInfo();
-    }, [email])
+      if (user_id) loadUserInfo();
+    }, [user_id])
   );
 
   const pickBackground = async () => {
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
       try {
-        const data = await uploadBackground(email as string, asset.uri);
+        const data = await uploadBackground(user_id as string, asset.uri);
         if (data.status === 'success') {
           setBackgroundImage(getImageUrl(data.filename));
         }
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
       try {
-        const data = await uploadAvatar(email as string, asset.uri);
+        const data = await uploadAvatar(user_id as string, asset.uri);
         if (data.status === 'success') {
           setAvatarImage(getImageUrl(data.filename));
         }
@@ -126,7 +126,7 @@ export default function ProfileScreen() {
           onPress={() =>
             router.push({
               pathname: '/screens/Profile/edit_profile',
-              params: { email },
+              params: { user_id },
             })
           }
         >
