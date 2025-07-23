@@ -45,7 +45,7 @@ export default function BottomTabs() {
       setActiveIndex(index);
       translateX.value = index * tabWidth;
     }
-  };
+  };  
 
   return (
     <View style={styles.wrapper}>

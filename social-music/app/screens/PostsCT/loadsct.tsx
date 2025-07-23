@@ -1,103 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import {
-    Alert,
-    Dimensions,
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Image, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Post = {
   content: string;
   userName: string;
   avatar: string | null;
   time: string;
-  media?: string;
 };
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export default function LoadSct({
-  posts,
-  onDelete,
-  onEdit,
-}: {
-  posts: Post[];
-  onDelete: (index: number) => void;
-  onEdit: (index: number, post: Post) => void;
-}) {
-  const [imageSizes, setImageSizes] = useState<{
-    [index: number]: { width: number; height: number };
-  }>({});
+export default function LoadSct({ posts }: { posts: Post[] }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
 
-  const handleEditPost = () => {
-    if (selectedPostIndex !== null) {
-      const post = posts[selectedPostIndex];
-      onEdit(selectedPostIndex, post);
-      setModalVisible(false);
-    }
-  };
-
-  const handleDeletePost = () => {
-    if (selectedPostIndex !== null) {
-      Alert.alert('Xác nhận', 'Bạn có muốn xóa bài viết này không?', [
-        { text: 'Hủy', style: 'cancel' },
-        {
-          text: 'Xóa',
-          style: 'destructive',
-          onPress: () => {
-            onDelete(selectedPostIndex);
-            setModalVisible(false);
-          },
-        },
-      ]);
-    }
-  };
-
   const menuOptions = [
-    { label: 'Ghim bài viết', icon: 'bookmark-outline', action: () => {} },
-    { label: 'Lưu bài viết', icon: 'download-outline', action: () => {} },
-    { label: 'Chỉnh sửa bài viết', icon: 'create-outline', action: handleEditPost },
-    { label: 'Chỉnh sửa ngày', icon: 'calendar-outline', action: () => {} },
-    { label: 'Xóa bài viết', icon: 'trash-outline', action: handleDeletePost },
+    { label: 'Ghim bài viết', icon: 'bookmark-outline' },
+    { label: 'Lưu bài viết', icon: 'download-outline' },
+    { label: 'Chỉnh sửa bài viết', icon: 'create-outline' },
+    { label: 'Chỉnh sửa ngày', icon: 'calendar-outline' },
+    { label: 'Xóa bài viết', icon: 'trash-outline' },
   ];
-
-  useEffect(() => {
-    posts.forEach((post, index) => {
-      if (post.media) {
-        Image.getSize(
-          post.media,
-          (w, h) => {
-            const maxWidth = SCREEN_WIDTH - 40;
-            let ratio = maxWidth / w;
-            let scaledWidth = w * ratio;
-            let scaledHeight = h * ratio;
-
-            if (scaledHeight > SCREEN_HEIGHT * 0.6) {
-              ratio = (SCREEN_HEIGHT * 0.6) / h;
-              scaledWidth = w * ratio;
-              scaledHeight = h * ratio;
-            }
-
-            setImageSizes((prev) => ({
-              ...prev,
-              [index]: { width: scaledWidth, height: scaledHeight },
-            }));
-          },
-          (error) => {
-            console.error('Image size error:', error);
-          }
-        );
-      }
-    });
-  }, [posts]);
 
   return (
     <>
@@ -126,20 +50,6 @@ export default function LoadSct({
           </View>
 
           <Text style={styles.postContent}>{post.content}</Text>
-
-          {post.media && imageSizes[index] && (
-            <Image
-              source={{ uri: post.media }}
-              style={{
-                width: imageSizes[index].width,
-                height: imageSizes[index].height,
-                borderRadius: 10,
-                marginTop: 10,
-                alignSelf: 'center',
-              }}
-              resizeMode="contain"
-            />
-          )}
 
           <View style={styles.actionRow}>
             <Pressable style={styles.actionButton}>
@@ -171,11 +81,7 @@ export default function LoadSct({
         >
           <View style={styles.modalContent}>
             {menuOptions.map((option, i) => (
-              <Pressable
-                key={i}
-                style={styles.modalItem}
-                onPress={option.action}
-              >
+              <Pressable key={i} style={styles.modalItem}>
                 <Ionicons name={option.icon as any} size={18} color="#333" style={{ width: 24 }} />
                 <Text style={styles.modalText}>{option.label}</Text>
               </Pressable>

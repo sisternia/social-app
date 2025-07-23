@@ -1,7 +1,6 @@
-import { fetchUserInfo, getImageUrl } from '@/services/api';
+import { fetchUserInfo, getArticles, getImageUrl, uploadArticle } from '@/services/api';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -36,74 +35,60 @@ export default function PostsCTScreen() {
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>('Người dùng');
   const [text, setText] = useState('');
-  const [mediaUri, setMediaUri] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
   const [posts, setPosts] = useState<
-    { content: string; userName: string; avatar: string | null; time: string; media?: string }[]
+    { content: string; userName: string; avatar: string | null; time: string }[]
   >([]);
-
-  const loadUser = async () => {
-    const data = await fetchUserInfo(user_id as string);
-    if (data.status === 'success') {
-      setAvatarImage(getImageUrl(data.user_avatar));
-      setUserName(data.user_name);
-    }
-  };
 
   useFocusEffect(
     useCallback(() => {
-      if (user_id) loadUser();
+      if (user_id) {
+        const loadAll = async () => {
+          const data = await fetchUserInfo(user_id as string);
+          if (data.status === 'success') {
+            const avatar = getImageUrl(data.user_avatar);
+            const name = data.user_name;
+            setAvatarImage(avatar);
+            setUserName(name);
+
+            const result = await getArticles(user_id as string);
+            if (result.status === 'success') {
+              const mapped = result.articles.map((a: any) => ({
+                content: a.articles_content,
+                userName: name,
+                avatar: avatar,
+                time: a.created_at,
+              }));
+              setPosts(mapped);
+            }
+          }
+        };
+        loadAll();
+      }
     }, [user_id])
   );
 
-  const pickMedia = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setMediaUri(result.assets[0].uri);
-    }
-  };
-
-  const handlePost = () => {
-    if (!text.trim() && !mediaUri) return;
+  const handlePost = async () => {
+    if (!text.trim()) return;
 
     const now = new Date();
     const timeFormatted = formatDateTime(now);
 
-    const newPost = {
-      content: text.trim(),
-      userName,
-      avatar: avatarImage,
-      time: timeFormatted,
-      media: mediaUri ?? undefined,
-    };
-
-    if (editIndex !== null) {
-      const updatedPosts = [...posts];
-      updatedPosts[editIndex] = newPost;
-      setPosts(updatedPosts);
-    } else {
+    const result = await uploadArticle(user_id as string, text.trim(), 'Công khai');
+    if (result.status === 'success') {
+      const newPost = {
+        content: text.trim(),
+        userName,
+        avatar: avatarImage,
+        time: timeFormatted,
+      };
       setPosts([newPost, ...posts]);
+      setText('');
+      setModalVisible(false);
+      Alert.alert('Thành công', 'Đăng bài thành công');
+    } else {
+      Alert.alert('Lỗi', 'Không thể đăng bài');
     }
-
-    setText('');
-    setMediaUri(null);
-    setModalVisible(false);
-    setEditIndex(null);
-    Alert.alert('Thành công', editIndex !== null ? 'Đã chỉnh sửa bài viết' : 'Đăng bài thành công');
-  };
-
-  const handleEdit = (index: number) => {
-    const post = posts[index];
-    setText(post.content);
-    setMediaUri(post.media ?? null);
-    setEditIndex(index);
-    setModalVisible(true);
   };
 
   return (
@@ -138,12 +123,8 @@ export default function PostsCTScreen() {
               />
             </View>
 
-            {mediaUri && (
-              <Image source={{ uri: mediaUri }} style={styles.mediaPreview} resizeMode="contain" />
-            )}
-
             <View style={styles.actionRow}>
-              <Pressable style={styles.actionBtn} onPress={pickMedia}>
+              <Pressable style={styles.actionBtn}>
                 <MaterialIcons name="photo-library" size={20} color="#0a7ea4" />
                 <Text style={styles.actionText}>Ảnh/Video</Text>
               </Pressable>
@@ -158,24 +139,15 @@ export default function PostsCTScreen() {
             </View>
 
             <Pressable style={styles.postButton} onPress={handlePost}>
-              <Text style={styles.postButtonText}>{editIndex !== null ? 'Lưu chỉnh sửa' : 'Đăng'}</Text>
+              <Text style={styles.postButtonText}>Đăng</Text>
             </Pressable>
           </View>
-
           <Pressable style={styles.modalBackdrop} onPress={() => setModalVisible(false)} />
         </View>
       </Modal>
 
       <ScrollView style={{ marginTop: 20 }}>
-        <LoadSct
-          posts={posts}
-          onDelete={(index) => {
-            const updated = [...posts];
-            updated.splice(index, 1);
-            setPosts(updated);
-          }}
-          onEdit={handleEdit}
-        />
+        <LoadSct posts={posts} />
       </ScrollView>
     </View>
   );
@@ -241,13 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     paddingTop: 6,
-  },
-  mediaPreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginTop: 10,
-    marginBottom: 10,
   },
   actionRow: {
     flexDirection: 'row',

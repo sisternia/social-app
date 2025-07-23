@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/users.routes');
+const articlesRoutes = require('./routes/articles.routes');
 require('dotenv').config();
 
 const app = express(); // ⬅️ PHẢI khai báo trước khi dùng `app`
@@ -18,6 +19,7 @@ app.use('/assets', express.static('assets')); // ⬅️ Bây giờ KHÔNG còn l
 
 // ✅ API routes
 app.use('/api/users', userRoutes);
+app.use('/api/articles', articlesRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://192.168.1.7:${PORT}`);

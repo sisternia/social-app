@@ -1,4 +1,5 @@
 const BASE_URL = 'http://192.168.1.7:3001/api/users';
+const ARTICLE_URL = 'http://192.168.1.7:3001/api/articles';
 const BASE_HOST = 'http://192.168.1.7:3001';
 
 export const login = async (email: string, password: string) => {
@@ -129,6 +130,23 @@ export const updateUserInfo = async (
     body: JSON.stringify(body),
   });
 
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const uploadArticle = async (user_id: string, content: string, articles_object = 'Công khai') => {
+  const res = await fetch(`${ARTICLE_URL}/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id, articles_content: content, articles_object }),
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const getArticles = async (user_id: string) => {
+  const res = await fetch(`${ARTICLE_URL}/get?user_id=${user_id}`);
   const data = await res.json();
   return { status: res.ok ? 'success' : 'error', ...data };
 };
