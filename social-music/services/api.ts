@@ -150,3 +150,34 @@ export const getArticles = async (user_id: string) => {
   const data = await res.json();
   return { status: res.ok ? 'success' : 'error', ...data };
 };
+
+export const uploadArticleMedia = async (
+  file: any,
+  articles_id: string,
+  media_type: 'Hình ảnh' | 'Video' | 'Âm thanh',
+  media_content: string = ''
+) => {
+  const formData = new FormData();
+  formData.append('file', {
+    uri: file.uri,
+    name: file.name || 'media',
+    type: file.mimeType || 'image/jpeg',
+  } as any);
+  formData.append('media_type', media_type);
+  formData.append('articles_id', articles_id);
+  formData.append('media_content', media_content);
+
+  const res = await fetch(`${ARTICLE_URL}/upload-media`, {
+    method: 'POST',
+    body: formData as any,
+  });
+
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};
+
+export const getArticleMedia = async (articles_id: string) => {
+  const res = await fetch(`${ARTICLE_URL}/media/article?articles_id=${articles_id}`);
+  const data = await res.json();
+  return { status: res.ok ? 'success' : 'error', ...data };
+};

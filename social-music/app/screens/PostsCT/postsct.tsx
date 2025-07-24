@@ -1,6 +1,7 @@
-import { fetchUserInfo, getArticles, getImageUrl, uploadArticle } from '@/services/api';
+import { fetchUserInfo, getArticles, getImageUrl, uploadArticle, uploadArticleMedia } from '@/services/api';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -16,6 +17,8 @@ import {
   View,
 } from 'react-native';
 import LoadSct from './loadsct';
+
+
 
 const { width } = Dimensions.get('window');
 
@@ -35,7 +38,10 @@ export default function PostsCTScreen() {
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>('Người dùng');
   const [text, setText] = useState('');
+  const [media, setMedia] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [mediaHeight, setMediaHeight] = useState<number>(200);
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   const [posts, setPosts] = useState<
     { content: string; userName: string; avatar: string | null; time: string }[]
   >([]);
@@ -67,7 +73,33 @@ export default function PostsCTScreen() {
       }
     }, [user_id])
   );
-
+  
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 1,
+    });
+  
+    if (!result.canceled && result.assets.length > 0) {
+      const selected = result.assets[0];
+      const { width: imgWidth, height: imgHeight } = selected;
+    
+      const displayWidth = screenWidth - 64;
+      const ratio = imgHeight / imgWidth;
+      let calculatedHeight = displayWidth * ratio;
+    
+      // Giới hạn chiều cao ảnh dọc không vượt quá 65% chiều cao màn hình
+      const maxHeight = screenHeight * 0.65;
+      if (calculatedHeight > maxHeight) {
+        calculatedHeight = maxHeight;
+      }
+    
+      setMedia(selected);
+      setMediaHeight(calculatedHeight);
+    }    
+  };
+  
   const handlePost = async () => {
     if (!text.trim()) return;
 
@@ -76,6 +108,12 @@ export default function PostsCTScreen() {
 
     const result = await uploadArticle(user_id as string, text.trim(), 'Công khai');
     if (result.status === 'success') {
+      if (media) {
+        const mediaType =
+          media.type === 'image' ? 'Hình ảnh' : media.type === 'video' ? 'Video' : 'Âm thanh';
+        await uploadArticleMedia(media, result.article_id, mediaType);
+      }
+    
       const newPost = {
         content: text.trim(),
         userName,
@@ -84,11 +122,12 @@ export default function PostsCTScreen() {
       };
       setPosts([newPost, ...posts]);
       setText('');
+      setMedia(null);
       setModalVisible(false);
       Alert.alert('Thành công', 'Đăng bài thành công');
     } else {
       Alert.alert('Lỗi', 'Không thể đăng bài');
-    }
+    }    
   };
 
   return (
@@ -113,18 +152,32 @@ export default function PostsCTScreen() {
               ) : (
                 <Ionicons name="person-circle-outline" size={40} color="#888" style={styles.modalAvatar} />
               )}
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Bạn đang nghĩ gì?"
-                value={text}
-                onChangeText={setText}
-                placeholderTextColor="#888"
-                multiline
-              />
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Bạn đang nghĩ gì?"
+                  value={text}
+                  onChangeText={setText}
+                  placeholderTextColor="#888"
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
             </View>
 
+            {/* Hiển thị ảnh bên ngoài modalHeader */}
+            {media?.uri && media.type === 'image' && (
+              <View style={styles.previewContainer}>
+                <Image
+                  source={{ uri: media.uri }}
+                  resizeMode="contain"
+                  style={[styles.previewImage, { height: mediaHeight }]}
+                />
+              </View>
+            )}
+
             <View style={styles.actionRow}>
-              <Pressable style={styles.actionBtn}>
+              <Pressable style={styles.actionBtn} onPress={pickImage}>
                 <MaterialIcons name="photo-library" size={20} color="#0a7ea4" />
                 <Text style={styles.actionText}>Ảnh/Video</Text>
               </Pressable>
@@ -213,7 +266,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     paddingTop: 6,
-  },
+    minHeight: 100, // đảm bảo đủ không gian hiển thị văn bản
+  },  
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -240,6 +294,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  previewContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  previewImage: {
+    width: '100%',
+    borderRadius: 8,
+  },  
   modalBackdrop: {
     ...StyleSheet.absoluteFillObject,
   },
